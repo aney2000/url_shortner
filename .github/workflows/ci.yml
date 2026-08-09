@@ -1,0 +1,37 @@
+name: Ruby CI
+
+# Trigger this workflow on all pushes and pull requests to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Check out the repository code onto the GitHub server
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Set up the Ruby environment
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        # 'ruby' tells it to use the latest stable version of Ruby.
+        # If you want a specific version, you can change this to '3.3' etc.
+        ruby-version: 'ruby' 
+        
+        # This is a magic setting! It automatically runs 'bundle install' 
+        # and caches the gems so your workflow runs super fast next time.
+        bundler-cache: true 
+
+    # 3. Run the linter
+    - name: Run RuboCop
+      run: bundle exec rubocop
+
+    # 4. Run the unit tests
+    - name: Run RSpec
+      run: bundle exec rspec

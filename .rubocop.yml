@@ -1,0 +1,15 @@
+# .rubocop.yml
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'spec/**/*' # Optional: Ignore strict linting in test files
+
+Style/StringLiterals:
+  Enabled: false # Allows both 'single' and "double" quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: false # Disables the requirement for # frozen_string_literal: true at the top of every file
+
+Style/Documentation:
+  Enabled: false # Disables the requirement to have a comment above every single class
