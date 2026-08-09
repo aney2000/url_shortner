@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clean URL Shortener</title>
+    <!-- Sinatra automatically serves files from the /public folder -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        
+        <!-- The form sends a POST request to our server -->
+        <form action="/" method="POST">
+            <input type="url" name="long_url" placeholder="Paste your long link here..." required>
+            <button type="submit">Shorten</button>
+        </form>
+
+        <!-- If the Ruby controller sets an @error variable, display it -->
+        <% if @error %>
+            <p class="error"><%= @error %></p>
+        <% end %>
+
+        <!-- If the Ruby controller sets a @short_url variable, display the result -->
+        <% if @short_url %>
+            <div class="result">
+                Success! Your short link is: <br>
+                <a href="<%= @short_url %>" target="_blank"><%= @short_url %></a>
+            </div>
+        <% end %>
+    </div>
+</body>
+</html>
