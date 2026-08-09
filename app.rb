@@ -2,11 +2,12 @@ require 'sinatra/base'
 require 'json'
 require_relative 'lib/url_validator'
 require_relative 'lib/short_code_generator'
-require_relative 'lib/url_repository'
+require_relative 'lib/sqlite_repository'
 
 class UrlShortenerApp < Sinatra::Base
   configure do
-    set :repository, UrlRepository.new
+    # Initialize the SQLite database connection once
+    set :repository, SqliteRepository.new('production.db')
   end
 
   # ==========================================

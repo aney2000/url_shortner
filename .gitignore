@@ -26,3 +26,6 @@
 /coverage/
 /spec/examples.txt
 .rspec_status
+
+# 6. Database files
+*.db
