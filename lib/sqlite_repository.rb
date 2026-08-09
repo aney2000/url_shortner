@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sqlite3'
 
 class SqliteRepository
@@ -5,25 +7,23 @@ class SqliteRepository
   def initialize(db_file = 'url_shortener.db')
     @db = SQLite3::Database.new(db_file)
     # This tells SQLite to return results as a Hash instead of a plain Array
-    @db.results_as_hash = true 
+    @db.results_as_hash = true
     setup_schema
   end
 
   def save(short_code, long_url)
     # The '?' are placeholders. This prevents SQL Injection attacks!
-    @db.execute("INSERT INTO urls (short_code, long_url) VALUES (?, ?)", [short_code, long_url])
+    @db.execute('INSERT INTO urls (short_code, long_url) VALUES (?, ?)', [short_code, long_url])
     short_code
   end
 
   def find_by_short_code(short_code)
     # LIMIT 1 ensures we stop searching once we find it
-    result = @db.execute("SELECT long_url FROM urls WHERE short_code = ? LIMIT 1", [short_code])
-    
-    if result.any?
-      result.first['long_url']
-    else
-      nil
-    end
+    result = @db.execute('SELECT long_url FROM urls WHERE short_code = ? LIMIT 1', [short_code])
+
+    return unless result.any?
+
+    result.first['long_url']
   end
 
   private

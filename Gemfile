@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
-gem 'sinatra'
 gem 'puma'
-gem 'sqlite3'
 gem 'rackup'
+gem 'sinatra'
+gem 'sqlite3'
 
 group :test do
-  gem 'rspec'
   gem 'rack-test'
+  gem 'rspec'
+  gem 'rubocop', require: false
 end

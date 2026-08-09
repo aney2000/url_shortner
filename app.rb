@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sinatra/base'
 require 'json'
 require_relative 'lib/url_validator'
@@ -13,7 +15,7 @@ class UrlShortenerApp < Sinatra::Base
   # ==========================================
   # WEB UI ROUTES (For humans in a browser)
   # ==========================================
-  
+
   get '/' do
     erb :index
   end
@@ -26,9 +28,9 @@ class UrlShortenerApp < Sinatra::Base
       settings.repository.save(short_code, long_url)
       @short_url = "#{request.base_url}/#{short_code}"
     else
-      @error = "Invalid URL format. Please include http:// or https://"
+      @error = 'Invalid URL format. Please include http:// or https://'
     end
-    
+
     erb :index
   end
 
@@ -38,28 +40,30 @@ class UrlShortenerApp < Sinatra::Base
 
   post '/shorten' do
     content_type :json
-    request_payload = JSON.parse(request.body.read) rescue {}
+    request_payload = begin
+      JSON.parse(request.body.read)
+    rescue StandardError
+      {}
+    end
     long_url = request_payload['url']
 
-    unless UrlValidator.valid?(long_url)
-      halt 400, { error: 'Invalid URL format' }.to_json
-    end
+    halt 400, { error: 'Invalid URL format' }.to_json unless UrlValidator.valid?(long_url)
 
     short_code = ShortCodeGenerator.generate
     settings.repository.save(short_code, long_url)
 
     base_url = request.base_url
     status 201
-    { 
-      short_code: short_code, 
-      short_url: "#{base_url}/#{short_code}" 
+    {
+      short_code: short_code,
+      short_url: "#{base_url}/#{short_code}"
     }.to_json
   end
 
   # ==========================================
   # REDIRECT ROUTE (Core Feature for both)
   # ==========================================
-  
+
   get '/:short_code' do
     short_code = params[:short_code]
     long_url = settings.repository.find_by_short_code(short_code)
@@ -67,7 +71,7 @@ class UrlShortenerApp < Sinatra::Base
     if long_url
       redirect long_url, 301
     else
-      halt 404, "Sorry, this link does not exist."
+      halt 404, 'Sorry, this link does not exist.'
     end
   end
 end

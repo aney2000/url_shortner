@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ENV['APP_ENV'] = 'test'
 
 require_relative '../app'
@@ -14,15 +16,15 @@ RSpec.describe 'UrlShortenerApp' do
   describe 'POST /shorten' do
     it 'returns 400 Bad Request for an invalid URL' do
       post '/shorten', { url: 'not-a-valid-url' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
-      
+
       expect(last_response.status).to eq(400)
     end
 
     it 'returns 201 Created and the short URL for a valid payload' do
       post '/shorten', { url: 'https://rubylang.org' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
-      
+
       expect(last_response.status).to eq(201)
-      
+
       response_body = JSON.parse(last_response.body)
       expect(response_body).to have_key('short_url')
       expect(response_body).to have_key('short_code')
@@ -37,7 +39,7 @@ RSpec.describe 'UrlShortenerApp' do
 
       # 2. Access the short code route
       get "/#{short_code}"
-      
+
       # 301 is the HTTP status code for "Moved Permanently" (Redirect)
       expect(last_response.status).to eq(301)
       expect(last_response.headers['Location']).to eq('https://github.com')
@@ -45,7 +47,7 @@ RSpec.describe 'UrlShortenerApp' do
 
     it 'returns 404 Not Found if the code does not exist' do
       get '/unknown123'
-      
+
       expect(last_response.status).to eq(404)
     end
   end

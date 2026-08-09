@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class ShortCodeGenerator
   # Build the Base62 alphabet array: ['a', 'b', ..., 'Z', '0', ..., '9']
   # .freeze makes it immutable (best practice for constants)
   BASE62_ALPHABET = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map(&:to_a).flatten.freeze
-  
+
   DEFAULT_LENGTH = 6
 
   # Generates a random alphanumeric string
