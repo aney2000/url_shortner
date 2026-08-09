@@ -3,9 +3,9 @@ name: Ruby CI
 # Trigger this workflow on all pushes and pull requests to the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   test:
