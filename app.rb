@@ -4,12 +4,17 @@ require 'sinatra/base'
 require 'json'
 require_relative 'lib/url_validator'
 require_relative 'lib/short_code_generator'
-require_relative 'lib/sqlite_repository'
+require_relative 'lib/postgres_repository'
 
 class UrlShortenerApp < Sinatra::Base
   configure do
-    # Initialize the SQLite database connection once
-    set :repository, SqliteRepository.new('production.db')
+    set :repository, PostgresRepository.new(
+      dbname: ENV.fetch('DATABASE_NAME', 'url_shortener_dev'),
+      host: ENV.fetch('DATABASE_HOST', nil),
+      port: ENV.fetch('DATABASE_PORT', 5432).to_i,
+      user: ENV.fetch('DATABASE_USER', nil),
+      password: ENV.fetch('DATABASE_PASSWORD', nil)
+    )
   end
 
   # ==========================================

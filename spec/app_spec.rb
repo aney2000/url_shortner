@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 ENV['APP_ENV'] = 'test'
+ENV['DATABASE_NAME'] = 'url_shortener_test'
 
 require_relative '../app'
 require 'rack/test'
@@ -8,9 +9,12 @@ require 'rack/test'
 RSpec.describe 'UrlShortenerApp' do
   include Rack::Test::Methods
 
-  # Tells Rack::Test which app to send requests to
   def app
     UrlShortenerApp
+  end
+
+  before(:each) do
+    app.settings.repository.clear!
   end
 
   describe 'POST /shorten' do
@@ -33,16 +37,13 @@ RSpec.describe 'UrlShortenerApp' do
 
   describe 'GET /:short_code' do
     it 'redirects to the long URL if the code exists' do
-      # 1. Create a short link first
       post '/shorten', { url: 'https://github.com' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
       short_code = JSON.parse(last_response.body)['short_code']
 
-      # 2. Access the short code route
       get "/#{short_code}"
 
-      # 301 is the HTTP status code for "Moved Permanently" (Redirect)
       expect(last_response.status).to eq(301)
-      expect(last_response.headers['Location']).to eq('https://github.com')
+      expect(last_response.headers['location']).to eq('https://github.com')
     end
 
     it 'returns 404 Not Found if the code does not exist' do
