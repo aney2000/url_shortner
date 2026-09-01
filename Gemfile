@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'bcrypt'
 gem 'pg'
 gem 'puma'
 gem 'rackup'
