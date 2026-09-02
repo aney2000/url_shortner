@@ -13,7 +13,7 @@
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/recent">Recent</a>
-            <span class="nav-user"><%= @current_user['username'] %></span>
+            <span class="nav-user"><%= h @current_user['username'] %></span>
             <form action="/logout" method="POST" class="inline-form">
                 <button type="submit" class="btn-logout">Logout</button>
             </form>

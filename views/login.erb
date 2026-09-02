@@ -10,7 +10,7 @@
         </form>
 
         <% if @error %>
-            <p class="error"><%= @error %></p>
+            <p class="error"><%= h @error %></p>
         <% end %>
 
         <p class="auth-link">Don't have an account? <a href="/signup">Sign Up</a></p>
