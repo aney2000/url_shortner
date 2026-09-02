@@ -15,6 +15,9 @@ RSpec.describe 'UrlShortenerApp' do
 
   before(:each) do
     app.settings.repository.clear!
+    conn = PG.connect(dbname: 'url_shortener_test')
+    conn.exec('DELETE FROM users')
+    conn.close
   end
 
   describe 'POST /shorten' do
@@ -50,6 +53,50 @@ RSpec.describe 'UrlShortenerApp' do
       get '/unknown123'
 
       expect(last_response.status).to eq(404)
+    end
+  end
+
+  describe 'POST / (web form)' do
+    context 'when logged in' do
+      before(:each) do
+        post '/signup', username: 'alice', password: 'password123'
+        post '/login', username: 'alice', password: 'password123'
+      end
+
+      it 'associates the shortened URL with the current user' do
+        post '/', long_url: 'https://example.com'
+
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to include('Success!')
+      end
+    end
+
+    context 'when not logged in' do
+      it 'still shortens the URL anonymously' do
+        post '/', long_url: 'https://example.com'
+
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to include('short link')
+      end
+    end
+  end
+
+  describe 'GET / (index)' do
+    it 'shows login/signup links when not logged in' do
+      get '/'
+
+      expect(last_response.body).to include('Log In')
+      expect(last_response.body).to include('Sign Up')
+    end
+
+    it 'shows username and logout when logged in' do
+      post '/signup', username: 'alice', password: 'password123'
+      post '/login', username: 'alice', password: 'password123'
+
+      get '/'
+
+      expect(last_response.body).to include('alice')
+      expect(last_response.body).to include('Logout')
     end
   end
 end

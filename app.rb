@@ -58,16 +58,22 @@ class UrlShortenerApp < Sinatra::Base
 
   post '/' do
     long_url = params[:long_url]
+    @current_user = current_user
 
     if UrlValidator.valid?(long_url)
       short_code = ShortCodeGenerator.generate
-      settings.repository.save(short_code, long_url)
+
+      if @current_user
+        settings.repository.save_with_user(short_code, long_url, @current_user['id'])
+      else
+        settings.repository.save(short_code, long_url)
+      end
+
       @short_url = "#{request.base_url}/#{short_code}"
     else
       @error = 'Invalid URL format. Please include http:// or https://'
     end
 
-    @current_user = current_user
     erb :index
   end
 
