@@ -24,11 +24,12 @@ class UrlShortenerApp < Sinatra::Base
       password: ENV.fetch('DATABASE_PASSWORD', nil)
     )
 
-    set :repository, PostgresRepository.new(db_conn)
-
+    # UserRepository first -- urls table FK references users
     user_repo = UserRepository.new(db_conn)
     set :authenticator, Authenticator.new(user_repo)
     set :user_repository, user_repo
+
+    set :repository, PostgresRepository.new(db_conn)
   end
 
   helpers do

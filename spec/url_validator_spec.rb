@@ -16,8 +16,20 @@ RSpec.describe UrlValidator do
       expect(UrlValidator.valid?('hello_i_am_a_random_text')).to be false
     end
 
-    it 'returns false if the protocol (http/https) is missing' do
+    it 'returns false if the protocol is missing' do
       expect(UrlValidator.valid?('www.google.com')).to be false
+    end
+
+    it 'returns false for http:// with no host' do
+      expect(UrlValidator.valid?('http://')).to be false
+    end
+
+    it 'returns false for nil' do
+      expect(UrlValidator.valid?(nil)).to be false
+    end
+
+    it 'returns false for empty string' do
+      expect(UrlValidator.valid?('')).to be false
     end
   end
 end

@@ -1,20 +1,28 @@
 # frozen_string_literal: true
 
 require_relative '../lib/postgres_repository'
+require_relative '../lib/user_repository'
 require_relative 'support/shared_repository_contract'
 
 RSpec.describe PostgresRepository do
   let(:conn) { PG.connect(dbname: 'url_shortener_test') }
+  let(:user_repo) { UserRepository.new(conn) }
   let(:repository) { PostgresRepository.new(conn) }
 
   before(:each) do
     repository.clear!
+    conn.exec('DELETE FROM users')
   end
 
   after(:all) do
     c = PG.connect(dbname: 'url_shortener_test')
-    PostgresRepository.new(c).clear!
+    c.exec('DELETE FROM urls')
+    c.exec('DELETE FROM users')
     c.close
+  end
+
+  def create_user(username)
+    user_repo.create(username, 'password123')
   end
 
   it_behaves_like 'a url repository'
@@ -29,7 +37,8 @@ RSpec.describe PostgresRepository do
 
   describe '#save_with_user' do
     it 'stores a url associated with a user_id' do
-      repository.save_with_user('code1', 'https://example.com', 1)
+      user = create_user('alice')
+      repository.save_with_user('code1', 'https://example.com', user['id'])
 
       result = repository.find_by_short_code('code1')
 
@@ -39,11 +48,13 @@ RSpec.describe PostgresRepository do
 
   describe '#find_by_user' do
     it 'returns all urls for a specific user' do
-      repository.save_with_user('code1', 'https://example.com', 1)
-      repository.save_with_user('code2', 'https://other.com', 1)
-      repository.save_with_user('code3', 'https://third.com', 2)
+      user1 = create_user('alice')
+      user2 = create_user('bob')
+      repository.save_with_user('code1', 'https://example.com', user1['id'])
+      repository.save_with_user('code2', 'https://other.com', user1['id'])
+      repository.save_with_user('code3', 'https://third.com', user2['id'])
 
-      results = repository.find_by_user(1)
+      results = repository.find_by_user(user1['id'])
 
       expect(results.length).to eq(2)
       expect(results.map { |r| r['short_code'] }).to contain_exactly('code1', 'code2')
@@ -58,8 +69,10 @@ RSpec.describe PostgresRepository do
 
   describe '#recent' do
     it 'returns the most recent urls across all users' do
-      repository.save_with_user('code1', 'https://first.com', 1)
-      repository.save_with_user('code2', 'https://second.com', 2)
+      user1 = create_user('alice')
+      user2 = create_user('bob')
+      repository.save_with_user('code1', 'https://first.com', user1['id'])
+      repository.save_with_user('code2', 'https://second.com', user2['id'])
       repository.save('code3', 'https://anon.com')
 
       results = repository.recent(10)

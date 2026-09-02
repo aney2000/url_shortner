@@ -66,9 +66,11 @@ class PostgresRepository
         id SERIAL PRIMARY KEY,
         short_code TEXT UNIQUE NOT NULL,
         long_url TEXT NOT NULL,
-        user_id INTEGER,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT NOW()
       );
     SQL
+    @conn.exec('CREATE INDEX IF NOT EXISTS idx_urls_user_id ON urls(user_id);')
+    @conn.exec('CREATE INDEX IF NOT EXISTS idx_urls_created_at ON urls(created_at DESC);')
   end
 end
