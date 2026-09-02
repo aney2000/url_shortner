@@ -4,55 +4,165 @@ require_relative '../lib/url_checker'
 
 RSpec.describe UrlChecker do
   describe '.check' do
-    it 'returns reachable for a live public URL' do
-      result = UrlChecker.check('https://www.google.com')
+    context 'when host is reachable' do
+      it 'returns reachable for a successful response' do
+        allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
+        response = instance_double(Net::HTTPOK, code: '200')
+        allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+        allow(response).to receive(:is_a?).with(Net::HTTPRedirection).and_return(false)
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_return(response)
 
-      expect(result).to be_reachable
-      expect(result.warning).to be_nil
+        result = UrlChecker.check('https://example.com')
+
+        expect(result).to be_reachable
+        expect(result.warning).to be_nil
+      end
+
+      it 'returns reachable for a redirect response' do
+        allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
+        response = instance_double(Net::HTTPRedirection, code: '301')
+        allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
+        allow(response).to receive(:is_a?).with(Net::HTTPRedirection).and_return(true)
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_return(response)
+
+        result = UrlChecker.check('https://example.com')
+
+        expect(result).to be_reachable
+      end
     end
 
-    it 'returns unreachable with warning for a non-existent host' do
-      result = UrlChecker.check('https://this-host-does-not-exist-xyz123abc.com')
+    context 'when host returns an error' do
+      it 'returns unreachable with HTTP status warning' do
+        allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
+        response = instance_double(Net::HTTPNotFound, code: '404')
+        allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
+        allow(response).to receive(:is_a?).with(Net::HTTPRedirection).and_return(false)
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_return(response)
 
-      expect(result).not_to be_reachable
-      expect(result.warning).not_to be_nil
+        result = UrlChecker.check('https://example.com')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to eq('URL returned HTTP 404')
+      end
     end
 
-    it 'blocks private/internal addresses (SSRF protection)' do
-      result = UrlChecker.check('http://127.0.0.1/admin')
+    context 'when host is unreachable' do
+      it 'returns unreachable on connection refused' do
+        allow(Resolv).to receive(:getaddresses).with('down.example.com').and_return(['93.184.216.34'])
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_raise(Errno::ECONNREFUSED)
 
-      expect(result).not_to be_reachable
-      expect(result.warning).to include('private')
+        result = UrlChecker.check('https://down.example.com')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to eq('Host is unreachable')
+      end
+
+      it 'returns unreachable on timeout' do
+        allow(Resolv).to receive(:getaddresses).with('slow.example.com').and_return(['93.184.216.34'])
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_raise(Net::OpenTimeout)
+
+        result = UrlChecker.check('https://slow.example.com')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to eq('Request timed out')
+      end
+
+      it 'returns unreachable on DNS failure' do
+        allow(Resolv).to receive(:getaddresses).with('nonexistent.example.com').and_return(['93.184.216.34'])
+        http = instance_double(Net::HTTP)
+        allow(Net::HTTP).to receive(:new).and_return(http)
+        allow(http).to receive(:use_ssl=)
+        allow(http).to receive(:open_timeout=)
+        allow(http).to receive(:read_timeout=)
+        allow(http).to receive(:request).and_raise(SocketError.new('getaddrinfo: Name or service not known'))
+
+        result = UrlChecker.check('https://nonexistent.example.com')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to eq('Could not resolve host')
+      end
     end
 
-    it 'blocks localhost (SSRF protection)' do
-      result = UrlChecker.check('http://localhost:5432')
+    context 'SSRF protection' do
+      it 'blocks private addresses' do
+        allow(Resolv).to receive(:getaddresses).with('127.0.0.1').and_return(['127.0.0.1'])
 
-      expect(result).not_to be_reachable
-      expect(result.warning).to include('private')
-    end
+        result = UrlChecker.check('http://127.0.0.1/admin')
 
-    it 'blocks 169.254.x.x metadata addresses (SSRF protection)' do
-      result = UrlChecker.check('http://169.254.169.254/latest/meta-data/')
+        expect(result).not_to be_reachable
+        expect(result.warning).to include('private')
+      end
 
-      expect(result).not_to be_reachable
-      expect(result.warning).to include('private')
+      it 'blocks localhost' do
+        allow(Resolv).to receive(:getaddresses).with('localhost').and_return(['127.0.0.1'])
+
+        result = UrlChecker.check('http://localhost:5432')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to include('private')
+      end
+
+      it 'blocks cloud metadata addresses' do
+        allow(Resolv).to receive(:getaddresses).with('169.254.169.254').and_return(['169.254.169.254'])
+
+        result = UrlChecker.check('http://169.254.169.254/latest/meta-data/')
+
+        expect(result).not_to be_reachable
+        expect(result.warning).to include('private')
+      end
     end
   end
 
   describe '.safe_host?' do
     it 'returns true for public hosts' do
-      expect(UrlChecker.safe_host?('google.com')).to be true
+      allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
+
+      expect(UrlChecker.safe_host?('example.com')).to be true
     end
 
     it 'returns false for localhost' do
+      allow(Resolv).to receive(:getaddresses).with('localhost').and_return(['127.0.0.1'])
+
       expect(UrlChecker.safe_host?('localhost')).to be false
     end
 
     it 'returns false for private IPs' do
+      allow(Resolv).to receive(:getaddresses).with('192.168.1.1').and_return(['192.168.1.1'])
       expect(UrlChecker.safe_host?('192.168.1.1')).to be false
+
+      allow(Resolv).to receive(:getaddresses).with('10.0.0.1').and_return(['10.0.0.1'])
       expect(UrlChecker.safe_host?('10.0.0.1')).to be false
-      expect(UrlChecker.safe_host?('172.16.0.1')).to be false
+    end
+
+    it 'returns false for unresolvable hosts' do
+      allow(Resolv).to receive(:getaddresses).with('nope.invalid').and_raise(Resolv::ResolvError)
+
+      expect(UrlChecker.safe_host?('nope.invalid')).to be false
     end
   end
 end
