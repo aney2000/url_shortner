@@ -350,3 +350,16 @@ a:hover { text-decoration: underline; }
 
     .auth-card { padding: var(--space-xl); }
 }
+
+/* ==========================================
+   URL Warning
+   ========================================== */
+.warning {
+    color: #b45309;
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    margin-top: var(--space-sm);
+}

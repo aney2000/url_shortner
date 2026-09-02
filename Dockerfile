@@ -14,6 +14,6 @@ COPY . .
 EXPOSE 9292
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
-    CMD curl -f http://localhost:9292/login || exit 1
+    CMD ruby -e "require 'net/http'; Net::HTTP.get(URI('http://localhost:9292/login'))" || exit 1
 
 CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "--port", "9292"]

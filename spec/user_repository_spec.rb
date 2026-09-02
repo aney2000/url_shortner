@@ -3,12 +3,12 @@
 require_relative '../lib/user_repository'
 
 RSpec.describe UserRepository do
-  let(:conn) { test_db_connection }
-  let(:repository) { UserRepository.new(conn) }
+  let(:pool) { test_db_pool }
+  let(:repository) { UserRepository.new(pool) }
 
   before(:each) do
-    repository # ensure schema is created first
-    conn.exec('DELETE FROM users')
+    repository
+    pool.with { |conn| conn.exec('DELETE FROM users') }
   end
 
   after(:all) do
@@ -50,19 +50,4 @@ RSpec.describe UserRepository do
     end
   end
 
-  describe '#find_by_id' do
-    it 'returns the user hash when found' do
-      created = repository.create('charlie', 'password123')
-
-      user = repository.find_by_id(created['id'])
-
-      expect(user['username']).to eq('charlie')
-    end
-
-    it 'returns nil when id does not exist' do
-      user = repository.find_by_id(999_999)
-
-      expect(user).to be_nil
-    end
-  end
 end

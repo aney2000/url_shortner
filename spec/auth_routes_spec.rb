@@ -46,14 +46,21 @@ RSpec.describe 'Authentication routes' do
       post '/signup', username: 'alice', password: 'ab'
 
       expect(last_response.status).to eq(200)
-      expect(last_response.body).to include('Password must be at least 6 characters')
+      expect(last_response.body).to include('at least')
     end
 
     it 'shows error for empty username' do
       post '/signup', username: '', password: 'password123'
 
       expect(last_response.status).to eq(200)
-      expect(last_response.body).to include('Username already taken')
+      expect(last_response.body).to include('Username is required')
+    end
+
+    it 'shows error for invalid username characters' do
+      post '/signup', username: 'bad user!', password: 'password123'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('letters, numbers')
     end
   end
 

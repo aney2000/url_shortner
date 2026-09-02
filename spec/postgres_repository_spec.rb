@@ -5,13 +5,13 @@ require_relative '../lib/user_repository'
 require_relative 'support/shared_repository_contract'
 
 RSpec.describe PostgresRepository do
-  let(:conn) { test_db_connection }
-  let(:user_repo) { UserRepository.new(conn) }
-  let(:repository) { PostgresRepository.new(conn) }
+  let(:pool) { test_db_pool }
+  let(:user_repo) { UserRepository.new(pool) }
+  let(:repository) { PostgresRepository.new(pool) }
 
   before(:each) do
     repository.clear!
-    conn.exec('DELETE FROM users')
+    pool.with { |conn| conn.exec('DELETE FROM users') }
   end
 
   after(:all) do
@@ -89,6 +89,20 @@ RSpec.describe PostgresRepository do
       results = repository.recent(2)
 
       expect(results.length).to eq(2)
+    end
+  end
+
+  describe '#clear!' do
+    it 'raises outside test environment' do
+      original_app = ENV['APP_ENV']
+      original_rack = ENV['RACK_ENV']
+      ENV['APP_ENV'] = 'production'
+      ENV['RACK_ENV'] = 'production'
+
+      expect { repository.clear! }.to raise_error(RuntimeError, /only available in test/)
+    ensure
+      ENV['APP_ENV'] = original_app
+      ENV['RACK_ENV'] = original_rack
     end
   end
 end

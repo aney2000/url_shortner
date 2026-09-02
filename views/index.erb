@@ -6,7 +6,7 @@
     </form>
 
     <% if @error %>
-        <p class="error"><%= @error %></p>
+        <p class="error"><%= h @error %></p>
     <% end %>
 
     <% if @short_url %>
@@ -14,31 +14,13 @@
             Success! Your short link is:
             <a href="<%= @short_url %>" target="_blank"><%= @short_url %></a>
         </div>
+        <% if @url_warning %>
+            <p class="warning"><%= h @url_warning %></p>
+        <% end %>
     <% end %>
 </div>
 
 <div class="card">
     <h2>My Links</h2>
-    <% if @links.empty? %>
-        <p class="muted">No links yet. Shorten your first URL above!</p>
-    <% else %>
-        <div class="table-wrap">
-            <table class="link-table">
-                <thead>
-                    <tr>
-                        <th>Short URL</th>
-                        <th>Original URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% @links.each do |link| %>
-                        <tr>
-                            <td><a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank"><%= @base_url %>/<%= link['short_code'] %></a></td>
-                            <td class="long-url-cell"><%= link['long_url'] %></td>
-                        </tr>
-                    <% end %>
-                </tbody>
-            </table>
-        </div>
-    <% end %>
+    <%= erb :_link_table, locals: { empty_message: 'No links yet. Shorten your first URL above!' } %>
 </div>

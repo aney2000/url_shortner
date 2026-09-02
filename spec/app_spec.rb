@@ -74,6 +74,13 @@ RSpec.describe 'UrlShortenerApp' do
       expect(last_response.status).to eq(400)
     end
 
+    it 'returns 400 for invalid JSON' do
+      post '/shorten', 'not-json{{{', { 'CONTENT_TYPE' => 'application/json' }
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to eq('Invalid JSON')
+    end
+
     it 'returns 201 Created and the short URL for a valid payload' do
       post '/shorten', { url: 'https://rubylang.org' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
 
@@ -92,7 +99,7 @@ RSpec.describe 'UrlShortenerApp' do
 
       get "/#{short_code}"
 
-      expect(last_response.status).to eq(301)
+      expect(last_response.status).to eq(302)
       expect(last_response.headers['location']).to eq('https://github.com')
     end
 
@@ -131,6 +138,46 @@ RSpec.describe 'UrlShortenerApp' do
 
       expect(last_response.status).to eq(200)
       expect(last_response.body).to include('Recent Links')
+    end
+  end
+
+  describe 'rate limiting' do
+    it 'returns 429 on API when rate limit exceeded' do
+      21.times do
+        post '/shorten', { url: 'https://example.com' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
+      end
+
+      expect(last_response.status).to eq(429)
+      expect(JSON.parse(last_response.body)['error']).to eq('Too many requests')
+    end
+
+    it 'shows rate limit error on web form when limit exceeded' do
+      sign_up_and_login
+      21.times { post '/', long_url: 'https://example.com' }
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Too many requests')
+    end
+  end
+
+  describe 'error handling' do
+    it 'returns 503 when CollisionError is raised' do
+      allow(ShortCodeGenerator).to receive(:generate_unique).and_raise(ShortCodeGenerator::CollisionError)
+
+      post '/shorten', { url: 'https://example.com' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
+
+      expect(last_response.status).to eq(503)
+    end
+
+    it 'returns 500 for unexpected errors' do
+      app.settings.set(:raise_errors, false)
+      allow(ShortCodeGenerator).to receive(:generate_unique).and_raise(StandardError, 'boom')
+
+      post '/shorten', { url: 'https://example.com' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
+
+      expect(last_response.status).to eq(500)
+    ensure
+      app.settings.set(:raise_errors, true)
     end
   end
 end

@@ -5,24 +5,31 @@ module Routes
     def self.registered(app)
       app.post '/shorten' do
         content_type :json
-        request_payload = begin
-          JSON.parse(request.body.read)
-        rescue StandardError
-          {}
-        end
-        long_url = request_payload['url']
 
+        halt 429, { error: 'Too many requests' }.to_json unless settings.shorten_limiter.allow?(client_ip)
+
+        begin
+          request_payload = JSON.parse(request.body.read)
+        rescue JSON::ParserError
+          halt 400, { error: 'Invalid JSON' }.to_json
+        end
+
+        long_url = request_payload['url']
         halt 400, { error: 'Invalid URL format' }.to_json unless UrlValidator.valid?(long_url)
 
-        short_code = ShortCodeGenerator.generate_unique(settings.repository)
-        settings.repository.save(short_code, long_url)
+        check = UrlChecker.check(long_url)
+        warning = check.warning unless check.reachable?
 
-        base_url = request.base_url
+        short_code = create_short_url(settings.repository, long_url)
+
         status 201
-        {
+        response_body = {
           short_code: short_code,
-          short_url: "#{base_url}/#{short_code}"
-        }.to_json
+          short_url: "#{request.base_url}/#{short_code}"
+        }
+        response_body[:warning] = warning if warning
+
+        response_body.to_json
       end
     end
   end

@@ -4,13 +4,13 @@ require_relative '../lib/authenticator'
 require_relative '../lib/user_repository'
 
 RSpec.describe Authenticator do
-  let(:conn) { test_db_connection }
-  let(:user_repo) { UserRepository.new(conn) }
+  let(:pool) { test_db_pool }
+  let(:user_repo) { UserRepository.new(pool) }
   let(:authenticator) { Authenticator.new(user_repo) }
 
   before(:each) do
     user_repo
-    conn.exec('DELETE FROM users')
+    pool.with { |conn| conn.exec('DELETE FROM users') }
   end
 
   after(:all) do
@@ -20,31 +20,48 @@ RSpec.describe Authenticator do
   end
 
   describe '#register' do
-    it 'creates a new user and returns the user hash' do
-      user = authenticator.register('alice', 'password123')
+    it 'creates a new user and returns a success result' do
+      result = authenticator.register('alice', 'password123')
 
-      expect(user['id']).not_to be_nil
-      expect(user['username']).to eq('alice')
+      expect(result).to be_success
+      expect(result.user['username']).to eq('alice')
     end
 
-    it 'returns nil when username is already taken' do
+    it 'returns an error when username is already taken' do
       authenticator.register('alice', 'password123')
 
-      result = authenticator.register('alice', 'otherpass')
+      result = authenticator.register('alice', 'otherpass123')
 
-      expect(result).to be_nil
+      expect(result).not_to be_success
+      expect(result.error).to eq('Username already taken')
     end
 
-    it 'returns nil when username is empty' do
+    it 'returns an error when username is empty' do
       result = authenticator.register('', 'password123')
 
-      expect(result).to be_nil
+      expect(result).not_to be_success
+      expect(result.error).to eq('Username is required')
     end
 
-    it 'returns nil when password is too short' do
+    it 'returns an error when username has invalid characters' do
+      result = authenticator.register('al ice!@#', 'password123')
+
+      expect(result).not_to be_success
+      expect(result.error).to include('letters, numbers')
+    end
+
+    it 'returns an error when password is too short' do
       result = authenticator.register('alice', 'ab')
 
-      expect(result).to be_nil
+      expect(result).not_to be_success
+      expect(result.error).to include('at least')
+    end
+
+    it 'returns an error when password exceeds 72 characters' do
+      result = authenticator.register('alice', 'a' * 73)
+
+      expect(result).not_to be_success
+      expect(result.error).to include('at most')
     end
   end
 

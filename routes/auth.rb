@@ -8,20 +8,12 @@ module Routes
       end
 
       app.post '/signup' do
-        username = params[:username]
-        password = params[:password]
+        result = settings.authenticator.register(params[:username], params[:password])
 
-        if password.nil? || password.length < Authenticator::MIN_PASSWORD_LENGTH
-          @error = 'Password must be at least 6 characters'
-          return erb(:signup)
-        end
-
-        user = settings.authenticator.register(username, password)
-
-        if user
+        if result.success?
           redirect '/login'
         else
-          @error = 'Username already taken'
+          @error = result.error
           erb :signup
         end
       end
@@ -31,6 +23,11 @@ module Routes
       end
 
       app.post '/login' do
+        unless settings.login_limiter.allow?(client_ip)
+          @error = 'Too many login attempts. Please wait a moment.'
+          return erb(:login)
+        end
+
         user = settings.authenticator.login(params[:username], params[:password])
 
         if user

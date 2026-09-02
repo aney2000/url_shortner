@@ -2,6 +2,7 @@
 AllCops:
   NewCops: enable
   SuggestExtensions: false
+  TargetRubyVersion: 3.3
   Exclude:
     - 'vendor/**/*'
     - 'spec/**/*'
@@ -15,10 +16,21 @@ Style/FrozenStringLiteralComment:
 Style/Documentation:
   Enabled: false
 
+# Sinatra apps are single-class by design; the main app class contains
+# configuration, helpers, error handlers, and route definitions.
+Metrics/ClassLength:
+  Exclude:
+    - 'app.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'app.rb'
+
 # Sinatra route modules use a single `registered` method by convention.
 # These methods are route definitions, not complex business logic.
 Metrics/MethodLength:
   Exclude:
+    - 'app.rb'
     - 'routes/**/*'
 
 Metrics/AbcSize:

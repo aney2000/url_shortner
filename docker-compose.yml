@@ -3,13 +3,13 @@ services:
     image: postgres:16-alpine
     container_name: url_shortener_db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-url_shortener}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supersecret}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-url_shortener_prod}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U url_shortener"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -20,12 +20,13 @@ services:
     build: .
     container_name: url_shortener_web
     environment:
+      APP_ENV: production
       DATABASE_NAME: ${POSTGRES_DB:-url_shortener_prod}
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_USER: ${POSTGRES_USER:-url_shortener}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-supersecret}
-      SESSION_SECRET: ${SESSION_SECRET:-change-this-to-a-random-64-char-string-in-production-use-openssl-rand-hex-32!!}
+      DATABASE_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env (use: openssl rand -hex 32)}
     ports:
       - "9292:9292"
     depends_on:
