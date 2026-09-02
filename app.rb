@@ -87,6 +87,22 @@ class UrlShortenerApp < Sinatra::Base
   register Routes::Api
 
   # ==========================================
+  # ERROR HANDLERS
+  # ==========================================
+
+  error ShortCodeGenerator::CollisionError do
+    status 503
+    @error = 'Service temporarily unavailable. Please try again.'
+    erb :not_found
+  end
+
+  error do
+    status 500
+    content_type :html
+    erb :error
+  end
+
+  # ==========================================
   # WEB UI ROUTES
   # ==========================================
 
