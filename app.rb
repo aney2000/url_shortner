@@ -7,11 +7,13 @@ require_relative 'lib/short_code_generator'
 require_relative 'lib/postgres_repository'
 require_relative 'lib/user_repository'
 require_relative 'lib/authenticator'
+require_relative 'routes/auth'
+require_relative 'routes/api'
 
 class UrlShortenerApp < Sinatra::Base
   enable :sessions
-  set :session_secret, ENV.fetch('SESSION_SECRET',
-                                  'dev-secret-please-set-SESSION_SECRET-env-var-in-production-64chars-minimum!!')
+  set :session_secret,
+      ENV.fetch('SESSION_SECRET', 'dev-secret-please-set-SESSION_SECRET-env-var-in-production-64chars-minimum!!')
 
   configure do
     db_conn = PG.connect(
@@ -52,8 +54,11 @@ class UrlShortenerApp < Sinatra::Base
     end
   end
 
+  register Routes::Auth
+  register Routes::Api
+
   # ==========================================
-  # WEB UI ROUTES (Require login)
+  # WEB UI ROUTES
   # ==========================================
 
   get '/' do
@@ -80,58 +85,6 @@ class UrlShortenerApp < Sinatra::Base
     erb :index
   end
 
-  # ==========================================
-  # AUTH ROUTES (Public)
-  # ==========================================
-
-  get '/signup' do
-    erb :signup
-  end
-
-  post '/signup' do
-    username = params[:username]
-    password = params[:password]
-
-    if password.nil? || password.length < Authenticator::MIN_PASSWORD_LENGTH
-      @error = 'Password must be at least 6 characters'
-      return erb(:signup)
-    end
-
-    user = settings.authenticator.register(username, password)
-
-    if user
-      redirect '/login'
-    else
-      @error = 'Username already taken'
-      erb :signup
-    end
-  end
-
-  get '/login' do
-    erb :login
-  end
-
-  post '/login' do
-    user = settings.authenticator.login(params[:username], params[:password])
-
-    if user
-      session[:user_id] = user['id']
-      redirect '/'
-    else
-      @error = 'Invalid username or password'
-      erb :login
-    end
-  end
-
-  post '/logout' do
-    session.clear
-    redirect '/login'
-  end
-
-  # ==========================================
-  # DASHBOARD ROUTES (Require login)
-  # ==========================================
-
   get '/dashboard' do
     require_login
     @links = settings.repository.find_by_user(@current_user['id'])
@@ -147,33 +100,7 @@ class UrlShortenerApp < Sinatra::Base
   end
 
   # ==========================================
-  # API ROUTES (No auth required)
-  # ==========================================
-
-  post '/shorten' do
-    content_type :json
-    request_payload = begin
-      JSON.parse(request.body.read)
-    rescue StandardError
-      {}
-    end
-    long_url = request_payload['url']
-
-    halt 400, { error: 'Invalid URL format' }.to_json unless UrlValidator.valid?(long_url)
-
-    short_code = ShortCodeGenerator.generate
-    settings.repository.save(short_code, long_url)
-
-    base_url = request.base_url
-    status 201
-    {
-      short_code: short_code,
-      short_url: "#{base_url}/#{short_code}"
-    }.to_json
-  end
-
-  # ==========================================
-  # REDIRECT ROUTE (Public)
+  # REDIRECT ROUTE (must be last - catch-all)
   # ==========================================
 
   get '/:short_code' do
