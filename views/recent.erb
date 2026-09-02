@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recent Links - URL Shortener</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="/">Shorten URL</a>
+        <a href="/recent">Recent Links</a>
+        <% if @current_user %>
+            <a href="/dashboard">My Links</a>
+            <form action="/logout" method="POST" class="inline-form">
+                <button type="submit" class="nav-link-btn">Logout</button>
+            </form>
+        <% else %>
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        <% end %>
+    </nav>
+
+    <div class="container">
+        <h1>Recent Links</h1>
+
+        <% if @links.empty? %>
+            <p class="muted">No links shortened yet. <a href="/">Be the first!</a></p>
+        <% else %>
+            <div class="link-list">
+                <% @links.each do |link| %>
+                    <div class="link-item">
+                        <div class="short-url">
+                            <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
+                                <%= @base_url %>/<%= link['short_code'] %>
+                            </a>
+                        </div>
+                        <div class="long-url"><%= link['long_url'] %></div>
+                    </div>
+                <% end %>
+            </div>
+        <% end %>
+    </div>
+</body>
+</html>

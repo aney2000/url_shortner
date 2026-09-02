@@ -138,6 +138,13 @@ class UrlShortenerApp < Sinatra::Base
     erb :dashboard
   end
 
+  get '/recent' do
+    @current_user = current_user
+    @links = settings.repository.recent(20)
+    @base_url = request.base_url
+    erb :recent
+  end
+
   # ==========================================
   # API ROUTES (For tests and external apps)
   # ==========================================
