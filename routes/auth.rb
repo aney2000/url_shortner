@@ -35,6 +35,7 @@ module Routes
 
         if user
           session[:user_id] = user['id']
+          session[:username] = user['username']
           redirect '/'
         else
           @error = 'Invalid username or password'

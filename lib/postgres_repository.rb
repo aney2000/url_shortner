@@ -61,6 +61,11 @@ class PostgresRepository
   private
 
   def setup_schema
+    create_urls_table
+    create_indexes
+  end
+
+  def create_urls_table
     @conn.exec(<<-SQL)
       CREATE TABLE IF NOT EXISTS urls (
         id SERIAL PRIMARY KEY,
@@ -70,6 +75,9 @@ class PostgresRepository
         created_at TIMESTAMP DEFAULT NOW()
       );
     SQL
+  end
+
+  def create_indexes
     @conn.exec('CREATE INDEX IF NOT EXISTS idx_urls_user_id ON urls(user_id);')
     @conn.exec('CREATE INDEX IF NOT EXISTS idx_urls_created_at ON urls(created_at DESC);')
   end

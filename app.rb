@@ -37,7 +37,7 @@ class UrlShortenerApp < Sinatra::Base
     def current_user
       return nil unless session[:user_id]
 
-      settings.user_repository.find_by_id(session[:user_id])
+      { 'id' => session[:user_id], 'username' => session[:username] }
     end
 
     def require_login
