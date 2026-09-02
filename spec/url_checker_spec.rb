@@ -137,32 +137,4 @@ RSpec.describe UrlChecker do
       end
     end
   end
-
-  describe '.safe_host?' do
-    it 'returns true for public hosts' do
-      allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
-
-      expect(UrlChecker.safe_host?('example.com')).to be true
-    end
-
-    it 'returns false for localhost' do
-      allow(Resolv).to receive(:getaddresses).with('localhost').and_return(['127.0.0.1'])
-
-      expect(UrlChecker.safe_host?('localhost')).to be false
-    end
-
-    it 'returns false for private IPs' do
-      allow(Resolv).to receive(:getaddresses).with('192.168.1.1').and_return(['192.168.1.1'])
-      expect(UrlChecker.safe_host?('192.168.1.1')).to be false
-
-      allow(Resolv).to receive(:getaddresses).with('10.0.0.1').and_return(['10.0.0.1'])
-      expect(UrlChecker.safe_host?('10.0.0.1')).to be false
-    end
-
-    it 'returns false for unresolvable hosts' do
-      allow(Resolv).to receive(:getaddresses).with('nope.invalid').and_raise(Resolv::ResolvError)
-
-      expect(UrlChecker.safe_host?('nope.invalid')).to be false
-    end
-  end
 end

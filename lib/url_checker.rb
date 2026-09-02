@@ -63,6 +63,7 @@ class UrlChecker
   rescue Resolv::ResolvError
     false
   end
+  private_class_method :safe_host?
 
   def self.private_ip?(ip_string)
     addr = IPAddr.new(ip_string)
