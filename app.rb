@@ -24,13 +24,7 @@ class UrlShortenerApp < Sinatra::Base
       password: ENV.fetch('DATABASE_PASSWORD', nil)
     )
 
-    set :repository, PostgresRepository.new(
-      dbname: ENV.fetch('DATABASE_NAME', 'url_shortener_dev'),
-      host: ENV.fetch('DATABASE_HOST', nil),
-      port: ENV.fetch('DATABASE_PORT', 5432).to_i,
-      user: ENV.fetch('DATABASE_USER', nil),
-      password: ENV.fetch('DATABASE_PASSWORD', nil)
-    )
+    set :repository, PostgresRepository.new(db_conn)
 
     user_repo = UserRepository.new(db_conn)
     set :authenticator, Authenticator.new(user_repo)
@@ -42,10 +36,6 @@ class UrlShortenerApp < Sinatra::Base
       return nil unless session[:user_id]
 
       settings.user_repository.find_by_id(session[:user_id])
-    end
-
-    def logged_in?
-      !current_user.nil?
     end
 
     def require_login
@@ -110,7 +100,7 @@ class UrlShortenerApp < Sinatra::Base
     if long_url
       redirect long_url, 301
     else
-      halt 404, 'Sorry, this link does not exist.'
+      halt 404, erb(:not_found)
     end
   end
 end

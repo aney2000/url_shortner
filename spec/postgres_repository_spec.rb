@@ -4,16 +4,17 @@ require_relative '../lib/postgres_repository'
 require_relative 'support/shared_repository_contract'
 
 RSpec.describe PostgresRepository do
-  let(:repository) { PostgresRepository.new(dbname: 'url_shortener_test') }
+  let(:conn) { PG.connect(dbname: 'url_shortener_test') }
+  let(:repository) { PostgresRepository.new(conn) }
 
   before(:each) do
     repository.clear!
   end
 
   after(:all) do
-    repo = PostgresRepository.new(dbname: 'url_shortener_test')
-    repo.clear!
-    repo.close
+    c = PG.connect(dbname: 'url_shortener_test')
+    PostgresRepository.new(c).clear!
+    c.close
   end
 
   it_behaves_like 'a url repository'
@@ -64,7 +65,6 @@ RSpec.describe PostgresRepository do
       results = repository.recent(10)
 
       expect(results.length).to eq(3)
-      # Most recent first
       expect(results.first['short_code']).to eq('code3')
     end
 

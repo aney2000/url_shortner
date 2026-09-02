@@ -3,13 +3,8 @@
 require 'pg'
 
 class PostgresRepository
-  def initialize(dbname:, host: nil, port: 5432, user: nil, password: nil)
-    conn_params = { dbname: dbname, port: port }
-    conn_params[:host] = host if host
-    conn_params[:user] = user if user
-    conn_params[:password] = password if password
-
-    @conn = PG.connect(conn_params)
+  def initialize(conn)
+    @conn = conn
     setup_schema
   end
 
