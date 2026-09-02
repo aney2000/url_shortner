@@ -14,7 +14,7 @@ module Routes
 
         halt 400, { error: 'Invalid URL format' }.to_json unless UrlValidator.valid?(long_url)
 
-        short_code = ShortCodeGenerator.generate
+        short_code = ShortCodeGenerator.generate_unique(settings.repository)
         settings.repository.save(short_code, long_url)
 
         base_url = request.base_url

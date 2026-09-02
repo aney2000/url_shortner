@@ -63,7 +63,7 @@ class UrlShortenerApp < Sinatra::Base
     long_url = params[:long_url]
 
     if UrlValidator.valid?(long_url)
-      short_code = ShortCodeGenerator.generate
+      short_code = ShortCodeGenerator.generate_unique(settings.repository)
       settings.repository.save_with_user(short_code, long_url, @current_user['id'])
       @short_url = "#{request.base_url}/#{short_code}"
     else
