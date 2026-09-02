@@ -64,6 +64,23 @@ class UrlShortenerApp < Sinatra::Base
     def client_ip
       request.ip
     end
+
+    def create_short_url(repository, long_url, user_id: nil)
+      retries = 0
+      begin
+        short_code = ShortCodeGenerator.generate_unique(repository)
+        if user_id
+          repository.save_with_user(short_code, long_url, user_id)
+        else
+          repository.save(short_code, long_url)
+        end
+        short_code
+      rescue PG::UniqueViolation
+        retries += 1
+        retry if retries < 3
+        raise ShortCodeGenerator::CollisionError, 'Failed to save short URL after retries'
+      end
+    end
   end
 
   register Routes::Auth
@@ -101,8 +118,7 @@ class UrlShortenerApp < Sinatra::Base
     check = UrlChecker.check(long_url)
     @url_warning = check.warning unless check.reachable?
 
-    short_code = ShortCodeGenerator.generate_unique(settings.repository)
-    settings.repository.save_with_user(short_code, long_url, @current_user['id'])
+    short_code = create_short_url(settings.repository, long_url, user_id: @current_user['id'])
     @short_url = "#{request.base_url}/#{short_code}"
 
     @links = settings.repository.find_by_user(@current_user['id'])

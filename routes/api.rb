@@ -20,8 +20,7 @@ module Routes
         check = UrlChecker.check(long_url)
         warning = check.warning unless check.reachable?
 
-        short_code = ShortCodeGenerator.generate_unique(settings.repository)
-        settings.repository.save(short_code, long_url)
+        short_code = create_short_url(settings.repository, long_url)
 
         status 201
         response_body = {
