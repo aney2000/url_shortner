@@ -14,6 +14,7 @@ class UrlShortenerApp < Sinatra::Base
   enable :sessions
   set :session_secret,
       ENV.fetch('SESSION_SECRET', 'dev-secret-please-set-SESSION_SECRET-env-var-in-production-64chars-minimum!!')
+  set :protection, except: :json_csrf
 
   configure do
     db_conn = PG.connect(
