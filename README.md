@@ -30,7 +30,7 @@ bundle exec rackup
 
 ```bash
 createdb url_shortener_test   # first time only
-bundle exec rspec             # 84 tests
+bundle exec rspec             # 89 tests
 bundle exec rubocop           # linter
 ```
 
@@ -83,8 +83,18 @@ lib/
   url_checker.rb            -- URL liveness check + SSRF protection
   rate_limiter.rb           -- In-memory per-IP rate limiter
 views/                      -- ERB templates + _link_table partial
-spec/                       -- 84 RSpec tests
+spec/                       -- 89 RSpec tests
 Dockerfile                  -- App container (ruby:3.3-slim)
 docker-compose.yml          -- App + PostgreSQL (secrets required via .env)
 .github/workflows/ci.yml    -- CI (RuboCop + RSpec with PostgreSQL service)
 ```
+
+## Known Limitations
+
+These are accepted trade-offs for the current scope:
+
+- **Rate limiter is in-memory** -- resets on restart, doesn't scale across multiple Puma workers. Use Redis (e.g., `rack-attack`) for production at scale.
+- **URL checker is synchronous** -- blocks the request thread for up to 4 seconds. Move to a background job (Sidekiq) for high-traffic deployments.
+- **Schema managed at boot** -- `CREATE TABLE IF NOT EXISTS` in repository constructors. Use a migration tool (e.g., `sequel`) for schema evolution.
+- **No application-level logging** -- relies on Rack default request logging. Add structured logging for production debugging.
+- **API endpoint is unauthenticated** -- `POST /shorten` is open by design. Add API key auth if abuse becomes a concern.
