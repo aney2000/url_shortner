@@ -1,28 +1,25 @@
-<div class="container">
-    <h1>My Links</h1>
-
+<div class="card">
+    <h2>My Links</h2>
     <% if @links.empty? %>
         <p class="muted">No links yet. <a href="/">Shorten one now!</a></p>
     <% else %>
-        <table class="link-table">
-            <thead>
-                <tr>
-                    <th>Short URL</th>
-                    <th>Original URL</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% @links.each do |link| %>
+        <div class="table-wrap">
+            <table class="link-table">
+                <thead>
                     <tr>
-                        <td>
-                            <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
-                                <%= @base_url %>/<%= link['short_code'] %>
-                            </a>
-                        </td>
-                        <td class="long-url-cell"><%= link['long_url'] %></td>
+                        <th>Short URL</th>
+                        <th>Original URL</th>
                     </tr>
-                <% end %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% @links.each do |link| %>
+                        <tr>
+                            <td><a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank"><%= @base_url %>/<%= link['short_code'] %></a></td>
+                            <td class="long-url-cell"><%= link['long_url'] %></td>
+                        </tr>
+                    <% end %>
+                </tbody>
+            </table>
+        </div>
     <% end %>
 </div>
