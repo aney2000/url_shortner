@@ -1,15 +1,38 @@
 # .rubocop.yml
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.3
   Exclude:
     - 'vendor/**/*'
-    - 'spec/**/*' # Optional: Ignore strict linting in test files
+    - 'spec/**/*'
 
 Style/StringLiterals:
-  Enabled: false # Allows both 'single' and "double" quotes
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
-  Enabled: false # Disables the requirement for # frozen_string_literal: true at the top of every file
+  Enabled: false
 
 Style/Documentation:
-  Enabled: false # Disables the requirement to have a comment above every single class
+  Enabled: false
+
+# Sinatra apps are single-class by design; the main app class contains
+# configuration, helpers, error handlers, and route definitions.
+Metrics/ClassLength:
+  Exclude:
+    - 'app.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'app.rb'
+
+# Sinatra route modules use a single `registered` method by convention.
+# These methods are route definitions, not complex business logic.
+Metrics/MethodLength:
+  Exclude:
+    - 'app.rb'
+    - 'routes/**/*'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'routes/**/*'

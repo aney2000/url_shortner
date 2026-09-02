@@ -1,76 +1,100 @@
-# Ruby URL Shortener MVP
+# URL Shortener
 
-A lightweight, fully tested URL shortener built with Ruby and Sinatra. This project strictly adheres to **Clean Architecture** and **SOLID principles**, completely decoupling the core business logic from the web framework and database layers.
+A URL shortening service with user accounts, link history, and containerized deployment.
 
-## Features
+Built with Ruby, Sinatra, PostgreSQL, Docker.
 
-- **Web Interface:** A clean HTML/CSS frontend for human users.
-- **JSON API:** Endpoints for programmatic access and external integrations.
-- **Persistent Storage:** SQLite3 integration using the Repository Pattern.
-- **High Test Coverage:** Comprehensive unit and integration tests using RSpec and Rack::Test.
-- **CI/CD Ready:** Automated linting (RuboCop) and testing via GitHub Actions.
+## Run with Docker
 
-## Architecture
-
-This application uses the **Dependency Inversion Principle**. The core components (`UrlValidator`, `ShortCodeGenerator`) do not know anything about Sinatra or SQLite. Data persistence is handled via a `SqliteRepository` contract, which means the database can be swapped out in the future without touching a single line of business logic.
-
-## Prerequisites
-
-- Ruby (v3.0 or higher recommended)
-- Bundler (`gem install bundler`)
-- SQLite3 installed on your system
-
-## Getting Started
-
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd ruby_shortener
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   bundle install
-   ```
-
-3. **Start the web server:**
-   ```bash
-   bundle exec rackup -s puma -p 4567
-   ```
-   *The SQLite database (`production.db`) will be created automatically on the first run.*
-
-4. **Access the application:**
-   Open your browser and navigate to `http://localhost:4567`.
-
-## API Usage
-
-You can also interact with the application programmatically via the JSON API.
-
-**Create a short URL:**
 ```bash
-curl -X POST http://localhost:4567/shorten \
-     -H "Content-Type: application/json" \
-     -d '{"url": "[https://www.ruby-lang.org](https://www.ruby-lang.org)"}'
+cp .env.example .env
+# Edit .env -- set POSTGRES_USER, POSTGRES_PASSWORD, SESSION_SECRET
+docker compose up -d
+# Open http://localhost:9292
 ```
 
-**Response:**
-```json
-{
-  "short_code": "aB3x9",
-  "short_url": "http://localhost:4567/aB3x9"
-}
-```
+To stop: `docker compose down` (add `-v` to also delete the database).
 
-## Testing & Linting
+## Run Locally
 
-This project uses RSpec for Test-Driven Development (TDD) and RuboCop for code styling.
+Requires Ruby, Bundler, PostgreSQL.
 
-**Run the test suite:**
 ```bash
-bundle exec rspec
+bundle install
+createdb url_shortener_dev
+bundle exec rackup
+# Open http://localhost:9292
 ```
 
-**Run the linter:**
+## Tests
+
 ```bash
-bundle exec rubocop
+createdb url_shortener_test   # first time only
+bundle exec rspec             # 89 tests
+bundle exec rubocop           # linter
 ```
+
+## How It Works
+
+1. Visit the app -- you're redirected to **Log In**
+2. **Sign Up** with a username (alphanumeric, 1-50 chars) and password (6-72 chars)
+3. **Log In** -- you land on the home page
+4. Paste a URL, click **Shorten** -- you get a short link
+5. If the URL is unreachable, a warning is shown (link is still created)
+6. Your **link history** appears below the form
+7. Anyone with the short link gets redirected to the original URL
+8. `/recent` shows the 20 most recent links from all users (public)
+
+## API
+
+```bash
+curl -X POST http://localhost:9292/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+
+# {"short_code":"aB3xYz","short_url":"http://localhost:9292/aB3xYz"}
+# If URL is unreachable: {"short_code":"...","short_url":"...","warning":"Host is unreachable"}
+```
+
+Rate limited to 20 requests/minute per IP.
+
+## Security
+
+- **XSS**: All user data HTML-escaped via `h()` helper
+- **SQL injection**: Parameterized queries throughout
+- **SSRF**: URL checker blocks private/internal IPs before outbound requests
+- **Passwords**: bcrypt hashed, 6-72 char limit enforced
+- **Secrets**: `SESSION_SECRET` required in production (raises on boot if missing)
+- **Rate limiting**: Login (5/min) and shorten (20/min) per IP
+- **CSRF**: Rack::Protection enabled
+
+## Project Structure
+
+```
+app.rb                      -- Main app (config, routes, helpers)
+routes/auth.rb              -- Signup, login, logout (rate limited)
+routes/api.rb               -- JSON API (rate limited)
+lib/
+  authenticator.rb          -- Register/login with bcrypt, input validation
+  postgres_repository.rb    -- URL storage (PostgreSQL, connection pooled)
+  user_repository.rb        -- User storage (connection pooled)
+  short_code_generator.rb   -- Base62 codes with SecureRandom + collision retry
+  url_validator.rb          -- HTTP/HTTPS format validation
+  url_checker.rb            -- URL liveness check + SSRF protection
+  rate_limiter.rb           -- In-memory per-IP rate limiter
+views/                      -- ERB templates + _link_table partial
+spec/                       -- 89 RSpec tests
+Dockerfile                  -- App container (ruby:3.3-slim)
+docker-compose.yml          -- App + PostgreSQL (secrets required via .env)
+.github/workflows/ci.yml    -- CI (RuboCop + RSpec with PostgreSQL service)
+```
+
+## Known Limitations
+
+These are accepted trade-offs for the current scope:
+
+- **Rate limiter is in-memory** -- resets on restart, doesn't scale across multiple Puma workers. Use Redis (e.g., `rack-attack`) for production at scale.
+- **URL checker is synchronous** -- blocks the request thread for up to 4 seconds. Move to a background job (Sidekiq) for high-traffic deployments.
+- **Schema managed at boot** -- `CREATE TABLE IF NOT EXISTS` in repository constructors. Use a migration tool (e.g., `sequel`) for schema evolution.
+- **No application-level logging** -- relies on Rack default request logging. Add structured logging for production debugging.
+- **API endpoint is unauthenticated** -- `POST /shorten` is open by design. Add API key auth if abuse becomes a concern.

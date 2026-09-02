@@ -2,10 +2,12 @@
 
 source 'https://rubygems.org'
 
+gem 'bcrypt'
+gem 'connection_pool'
+gem 'pg'
 gem 'puma'
 gem 'rackup'
 gem 'sinatra'
-gem 'sqlite3'
 
 group :test do
   gem 'rack-test'

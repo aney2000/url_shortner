@@ -1,47 +1,365 @@
+/* ==========================================
+   Design Tokens
+   ========================================== */
+:root {
+    --color-bg:          #f0f2f5;
+    --color-surface:     #ffffff;
+    --color-text:        #1a1a2e;
+    --color-text-muted:  #6b7280;
+    --color-border:      #d1d5db;
+    --color-border-light:#eef0f2;
+
+    --color-primary:     #4f46e5;
+    --color-primary-hover:#4338ca;
+    --color-primary-ring: rgba(79, 70, 229, 0.15);
+
+    --color-success-bg:  #ecfdf5;
+    --color-success-border:#059669;
+    --color-error:       #dc2626;
+
+    --color-nav:         #111827;
+    --color-nav-text:    #9ca3af;
+    --color-nav-hover:   #ffffff;
+
+    --radius:            8px;
+    --radius-sm:         6px;
+    --shadow:            0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md:         0 4px 12px rgba(0, 0, 0, 0.08);
+
+    --space-xs:          0.5rem;
+    --space-sm:          0.75rem;
+    --space-md:          1rem;
+    --space-lg:          1.5rem;
+    --space-xl:          2rem;
+    --space-2xl:         2.5rem;
+
+    --font-sm:           0.85rem;
+    --font-base:         0.95rem;
+    --font-lg:           1.25rem;
+    --font-xl:           1.5rem;
+
+    --max-width:         860px;
+}
+
+/* ==========================================
+   Reset & Base
+   ========================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f4f4f9;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ==========================================
+   Navigation
+   ========================================== */
+.nav-bar {
+    background: var(--color-nav);
+    height: 52px;
+    padding: 0 var(--space-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    color: var(--color-nav-hover);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.3px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.nav-links a {
+    color: var(--color-nav-text);
+    font-size: var(--font-sm);
+    padding: var(--space-xs) 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-links a:hover { color: var(--color-nav-hover); text-decoration: none; }
+.nav-links a.active { color: var(--color-nav-hover); border-bottom-color: var(--color-primary); }
+
+.nav-user {
+    color: var(--color-nav-text);
+    font-size: var(--font-sm);
+    margin-left: var(--space-sm);
+    padding-left: var(--space-md);
+    border-left: 1px solid #374151;
+}
+
+.inline-form { display: inline; }
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #4b5563;
+    color: var(--color-nav-text);
+    padding: 4px var(--space-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-sm);
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-logout:hover { color: var(--color-nav-hover); border-color: #9ca3af; }
+
+/* ==========================================
+   Layout
+   ========================================== */
+.main-content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-xl);
+}
+
+/* ==========================================
+   Cards
+   ========================================== */
+.card {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-xl);
+}
+
+.card + .card { margin-top: var(--space-lg); }
+
+.card h2 {
+    font-size: var(--font-lg);
+    margin-bottom: var(--space-md);
+}
+
+/* ==========================================
+   Shortener Form
+   ========================================== */
+.shorten-form {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.shorten-form input[type="url"] {
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.shorten-form input[type="url"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-full { width: 100%; }
+
+/* ==========================================
+   Feedback Messages
+   ========================================== */
+.result {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-success-bg);
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--color-success-border);
+    font-size: var(--font-base);
+}
+
+.result a { font-weight: 600; word-break: break-all; }
+
+.error {
+    color: var(--color-error);
+    font-weight: 600;
+    margin-top: var(--space-sm);
+    font-size: var(--font-sm);
+}
+
+.muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-base);
+    padding: var(--space-md) 0;
+}
+
+/* ==========================================
+   Link Table
+   ========================================== */
+.link-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+}
+
+.link-table thead { background: #f9fafb; }
+
+.link-table th {
+    text-align: left;
+    padding: var(--space-sm) var(--space-md);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid var(--color-border-light);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.link-table td {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--color-border-light);
+    vertical-align: middle;
+}
+
+.link-table tbody tr:hover { background: #f9fafb; }
+.link-table a { font-weight: 500; }
+
+.long-url-cell {
+    color: var(--color-text-muted);
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   Auth Pages
+   ========================================== */
+.auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    min-height: 100vh;
+    padding: var(--space-xl);
+    background: var(--color-bg);
 }
 
-.container {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    text-align: center;
-    max-width: 500px;
+.auth-card {
+    background: var(--color-surface);
+    padding: var(--space-2xl);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
     width: 100%;
+    max-width: 400px;
+    text-align: center;
 }
 
-input[type="url"] {
-    width: 80%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.auth-card h1 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-xs);
 }
 
-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+.auth-subtitle {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-lg);
+    font-size: var(--font-base);
 }
 
-button:hover { background-color: #0056b3; }
-
-.result {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 4px;
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    text-align: left;
 }
 
-.error { color: red; font-weight: bold; }
+.auth-form input {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.auth-link {
+    margin-top: var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: var(--font-sm);
+}
+
+.auth-link a { font-weight: 600; }
+
+/* ==========================================
+   Container (dashboard / recent pages)
+   ========================================== */
+.page-header {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-lg);
+}
+
+/* ==========================================
+   Responsive
+   ========================================== */
+@media (max-width: 640px) {
+    .main-content { padding: var(--space-md); }
+
+    .shorten-form {
+        flex-direction: column;
+    }
+
+    .shorten-form input[type="url"] { width: 100%; }
+
+    .nav-bar { padding: 0 var(--space-md); }
+    .nav-links { gap: var(--space-sm); }
+    .nav-user { display: none; }
+
+    .link-table { font-size: 0.8rem; }
+    .link-table th,
+    .link-table td { padding: var(--space-xs) var(--space-sm); }
+    .long-url-cell { max-width: 160px; }
+
+    .auth-card { padding: var(--space-xl); }
+}
+
+/* ==========================================
+   URL Warning
+   ========================================== */
+.warning {
+    color: #b45309;
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    margin-top: var(--space-sm);
+}
