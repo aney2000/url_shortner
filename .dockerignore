@@ -1,0 +1,8 @@
+.git
+*.db
+spec/
+.rspec
+.rubocop.yml
+.github/
+FEATURES.md
+README.md
