@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'bcrypt'
+gem 'connection_pool'
 gem 'pg'
 gem 'puma'
 gem 'rackup'
