@@ -3,12 +3,12 @@
 require_relative '../lib/user_repository'
 
 RSpec.describe UserRepository do
-  let(:conn) { test_db_connection }
-  let(:repository) { UserRepository.new(conn) }
+  let(:pool) { test_db_pool }
+  let(:repository) { UserRepository.new(pool) }
 
   before(:each) do
-    repository # ensure schema is created first
-    conn.exec('DELETE FROM users')
+    repository
+    pool.with { |conn| conn.exec('DELETE FROM users') }
   end
 
   after(:all) do

@@ -54,10 +54,10 @@ RSpec.describe ShortCodeGenerator do
       expect(call_count).to eq(3)
     end
 
-    it 'raises after MAX_RETRIES collisions' do
+    it 'raises CollisionError after MAX_RETRIES collisions' do
       allow(repository).to receive(:find_by_short_code).and_return('https://existing.com')
 
-      expect { ShortCodeGenerator.generate_unique(repository) }.to raise_error(/Failed to generate/)
+      expect { ShortCodeGenerator.generate_unique(repository) }.to raise_error(ShortCodeGenerator::CollisionError)
     end
   end
 end

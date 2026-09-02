@@ -74,6 +74,13 @@ RSpec.describe 'UrlShortenerApp' do
       expect(last_response.status).to eq(400)
     end
 
+    it 'returns 400 for invalid JSON' do
+      post '/shorten', 'not-json{{{', { 'CONTENT_TYPE' => 'application/json' }
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to eq('Invalid JSON')
+    end
+
     it 'returns 201 Created and the short URL for a valid payload' do
       post '/shorten', { url: 'https://rubylang.org' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
 
@@ -92,7 +99,7 @@ RSpec.describe 'UrlShortenerApp' do
 
       get "/#{short_code}"
 
-      expect(last_response.status).to eq(301)
+      expect(last_response.status).to eq(302)
       expect(last_response.headers['location']).to eq('https://github.com')
     end
 
