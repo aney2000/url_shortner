@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: url_shortener_db
+    environment:
+      POSTGRES_USER: url_shortener
+      POSTGRES_PASSWORD: supersecret
+      POSTGRES_DB: url_shortener_prod
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # Expose on 5433 to avoid conflict with host PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U url_shortener -d url_shortener_prod"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - backend
+
+  web:
+    build: .
+    container_name: url_shortener_web
+    environment:
+      DATABASE_NAME: url_shortener_prod
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: url_shortener
+      DATABASE_PASSWORD: supersecret
+      SESSION_SECRET: "change-this-to-a-random-64-char-string-in-production-use-openssl-rand-hex-32!!"
+    ports:
+      - "9292:9292"   # Only port the user accesses
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  pg_data:
+
+networks:
+  backend:
+    driver: bridge

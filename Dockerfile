@@ -7,7 +7,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --without test
+RUN bundle config set without 'test' && bundle install
 
 COPY . .
 
