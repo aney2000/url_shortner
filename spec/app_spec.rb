@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-ENV['APP_ENV'] = 'test'
-ENV['DATABASE_NAME'] = 'url_shortener_test'
-
 require_relative '../app'
 require 'rack/test'
 
@@ -43,7 +40,7 @@ RSpec.describe 'UrlShortenerApp' do
     end
   end
 
-  describe 'POST / (access control)' do
+  describe 'POST / (web form)' do
     it 'redirects to /login when not logged in' do
       post '/', long_url: 'https://example.com'
 
@@ -51,13 +48,22 @@ RSpec.describe 'UrlShortenerApp' do
       expect(last_response.headers['location']).to include('/login')
     end
 
-    it 'shortens the URL when logged in' do
+    it 'shortens a valid URL when logged in' do
       sign_up_and_login
 
       post '/', long_url: 'https://example.com'
 
       expect(last_response.status).to eq(200)
       expect(last_response.body).to include('Success!')
+    end
+
+    it 'shows error for invalid URL when logged in' do
+      sign_up_and_login
+
+      post '/', long_url: 'not-a-url'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Invalid URL format')
     end
   end
 
@@ -90,7 +96,7 @@ RSpec.describe 'UrlShortenerApp' do
       expect(last_response.headers['location']).to eq('https://github.com')
     end
 
-    it 'returns 404 Not Found if the code does not exist' do
+    it 'returns 404 for unknown short code' do
       get '/unknown123'
 
       expect(last_response.status).to eq(404)
@@ -116,6 +122,15 @@ RSpec.describe 'UrlShortenerApp' do
       get '/'
 
       expect(last_response.body).to include('No links yet')
+    end
+  end
+
+  describe 'GET /recent' do
+    it 'is accessible without login' do
+      get '/recent'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Recent Links')
     end
   end
 end

@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-ENV['APP_ENV'] = 'test'
-ENV['DATABASE_NAME'] = 'url_shortener_test'
-
 require_relative '../app'
 require 'rack/test'
 
@@ -51,6 +48,13 @@ RSpec.describe 'Authentication routes' do
       expect(last_response.status).to eq(200)
       expect(last_response.body).to include('Password must be at least 6 characters')
     end
+
+    it 'shows error for empty username' do
+      post '/signup', username: '', password: 'password123'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Username already taken')
+    end
   end
 
   describe 'GET /login' do
@@ -83,13 +87,24 @@ RSpec.describe 'Authentication routes' do
   end
 
   describe 'POST /logout' do
-    it 'clears session and redirects to home' do
+    it 'clears session and redirects to login' do
       post '/signup', username: 'alice', password: 'password123'
       post '/login', username: 'alice', password: 'password123'
       post '/logout'
 
       expect(last_response.status).to eq(302)
-      expect(last_response.headers['location']).to include('/')
+      expect(last_response.headers['location']).to include('/login')
+    end
+
+    it 'prevents access to / after logout' do
+      post '/signup', username: 'alice', password: 'password123'
+      post '/login', username: 'alice', password: 'password123'
+      post '/logout'
+
+      get '/'
+
+      expect(last_response.status).to eq(302)
+      expect(last_response.headers['location']).to include('/login')
     end
   end
 end
