@@ -20,7 +20,48 @@ RSpec.describe 'UrlShortenerApp' do
     conn.close
   end
 
-  describe 'POST /shorten' do
+  def sign_up_and_login(username = 'alice', password = 'password123')
+    post '/signup', username: username, password: password
+    post '/login', username: username, password: password
+  end
+
+  describe 'GET / (access control)' do
+    it 'redirects to /login when not logged in' do
+      get '/'
+
+      expect(last_response.status).to eq(302)
+      expect(last_response.headers['location']).to include('/login')
+    end
+
+    it 'shows the shortener when logged in' do
+      sign_up_and_login
+
+      get '/'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Shorten')
+    end
+  end
+
+  describe 'POST / (access control)' do
+    it 'redirects to /login when not logged in' do
+      post '/', long_url: 'https://example.com'
+
+      expect(last_response.status).to eq(302)
+      expect(last_response.headers['location']).to include('/login')
+    end
+
+    it 'shortens the URL when logged in' do
+      sign_up_and_login
+
+      post '/', long_url: 'https://example.com'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Success!')
+    end
+  end
+
+  describe 'POST /shorten (API)' do
     it 'returns 400 Bad Request for an invalid URL' do
       post '/shorten', { url: 'not-a-valid-url' }.to_json, { 'CONTENT_TYPE' => 'application/json' }
 
@@ -56,47 +97,25 @@ RSpec.describe 'UrlShortenerApp' do
     end
   end
 
-  describe 'POST / (web form)' do
-    context 'when logged in' do
-      before(:each) do
-        post '/signup', username: 'alice', password: 'password123'
-        post '/login', username: 'alice', password: 'password123'
-      end
+  describe 'GET / (index with history)' do
+    it 'shows the user link history on the main page' do
+      sign_up_and_login
 
-      it 'associates the shortened URL with the current user' do
-        post '/', long_url: 'https://example.com'
-
-        expect(last_response.status).to eq(200)
-        expect(last_response.body).to include('Success!')
-      end
-    end
-
-    context 'when not logged in' do
-      it 'still shortens the URL anonymously' do
-        post '/', long_url: 'https://example.com'
-
-        expect(last_response.status).to eq(200)
-        expect(last_response.body).to include('short link')
-      end
-    end
-  end
-
-  describe 'GET / (index)' do
-    it 'shows login/signup links when not logged in' do
-      get '/'
-
-      expect(last_response.body).to include('Log In')
-      expect(last_response.body).to include('Sign Up')
-    end
-
-    it 'shows username and logout when logged in' do
-      post '/signup', username: 'alice', password: 'password123'
-      post '/login', username: 'alice', password: 'password123'
+      post '/', long_url: 'https://example.com'
+      post '/', long_url: 'https://github.com'
 
       get '/'
 
-      expect(last_response.body).to include('alice')
-      expect(last_response.body).to include('Logout')
+      expect(last_response.body).to include('https://example.com')
+      expect(last_response.body).to include('https://github.com')
+    end
+
+    it 'shows no history message when user has no links' do
+      sign_up_and_login
+
+      get '/'
+
+      expect(last_response.body).to include('No links yet')
     end
   end
 end

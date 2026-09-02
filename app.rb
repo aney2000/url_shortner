@@ -45,40 +45,43 @@ class UrlShortenerApp < Sinatra::Base
     def logged_in?
       !current_user.nil?
     end
+
+    def require_login
+      @current_user = current_user
+      redirect '/login' unless @current_user
+    end
   end
 
   # ==========================================
-  # WEB UI ROUTES (For humans in a browser)
+  # WEB UI ROUTES (Require login)
   # ==========================================
 
   get '/' do
-    @current_user = current_user
+    require_login
+    @links = settings.repository.find_by_user(@current_user['id'])
+    @base_url = request.base_url
     erb :index
   end
 
   post '/' do
+    require_login
     long_url = params[:long_url]
-    @current_user = current_user
 
     if UrlValidator.valid?(long_url)
       short_code = ShortCodeGenerator.generate
-
-      if @current_user
-        settings.repository.save_with_user(short_code, long_url, @current_user['id'])
-      else
-        settings.repository.save(short_code, long_url)
-      end
-
+      settings.repository.save_with_user(short_code, long_url, @current_user['id'])
       @short_url = "#{request.base_url}/#{short_code}"
     else
       @error = 'Invalid URL format. Please include http:// or https://'
     end
 
+    @links = settings.repository.find_by_user(@current_user['id'])
+    @base_url = request.base_url
     erb :index
   end
 
   # ==========================================
-  # AUTH ROUTES
+  # AUTH ROUTES (Public)
   # ==========================================
 
   get '/signup' do
@@ -122,17 +125,15 @@ class UrlShortenerApp < Sinatra::Base
 
   post '/logout' do
     session.clear
-    redirect '/'
+    redirect '/login'
   end
 
   # ==========================================
-  # DASHBOARD ROUTES
+  # DASHBOARD ROUTES (Require login)
   # ==========================================
 
   get '/dashboard' do
-    @current_user = current_user
-    redirect '/login' unless @current_user
-
+    require_login
     @links = settings.repository.find_by_user(@current_user['id'])
     @base_url = request.base_url
     erb :dashboard
@@ -146,7 +147,7 @@ class UrlShortenerApp < Sinatra::Base
   end
 
   # ==========================================
-  # API ROUTES (For tests and external apps)
+  # API ROUTES (No auth required)
   # ==========================================
 
   post '/shorten' do
@@ -172,7 +173,7 @@ class UrlShortenerApp < Sinatra::Base
   end
 
   # ==========================================
-  # REDIRECT ROUTE (Core Feature for both)
+  # REDIRECT ROUTE (Public)
   # ==========================================
 
   get '/:short_code' do
