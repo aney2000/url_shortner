@@ -1,6 +1,5 @@
 name: Ruby CI
 
-# Trigger this workflow on all pushes and pull requests to the main branch
 on:
   push:
     branches: [ "master" ]
@@ -8,30 +7,56 @@ on:
     branches: [ "master" ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'ruby'
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: url_shortener_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U runner -d url_shortener_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    env:
+      DATABASE_NAME: url_shortener_test
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USER: runner
+      DATABASE_PASSWORD: password
+
     steps:
-    # 1. Check out the repository code onto the GitHub server
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    # 2. Set up the Ruby environment
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        # 'ruby' tells it to use the latest stable version of Ruby.
-        # If you want a specific version, you can change this to '3.3' etc.
-        ruby-version: 'ruby' 
-        
-        # This is a magic setting! It automatically runs 'bundle install' 
-        # and caches the gems so your workflow runs super fast next time.
-        bundler-cache: true 
+      - name: Install PostgreSQL client headers
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev
 
-    # 3. Run the linter
-    - name: Run RuboCop
-      run: bundle exec rubocop
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'ruby'
+          bundler-cache: true
 
-    # 4. Run the unit tests
-    - name: Run RSpec
-      run: bundle exec rspec
+      - name: Run RSpec
+        run: bundle exec rspec

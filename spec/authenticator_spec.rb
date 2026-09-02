@@ -4,7 +4,7 @@ require_relative '../lib/authenticator'
 require_relative '../lib/user_repository'
 
 RSpec.describe Authenticator do
-  let(:conn) { PG.connect(dbname: 'url_shortener_test') }
+  let(:conn) { test_db_connection }
   let(:user_repo) { UserRepository.new(conn) }
   let(:authenticator) { Authenticator.new(user_repo) }
 
@@ -14,7 +14,7 @@ RSpec.describe Authenticator do
   end
 
   after(:all) do
-    c = PG.connect(dbname: 'url_shortener_test')
+    c = test_db_connection
     c.exec('DELETE FROM users') rescue nil # rubocop:disable Style/RescueModifier
     c.close
   end

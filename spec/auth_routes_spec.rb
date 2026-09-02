@@ -12,7 +12,7 @@ RSpec.describe 'Authentication routes' do
 
   before(:each) do
     app.settings.repository.clear!
-    conn = PG.connect(dbname: 'url_shortener_test')
+    conn = test_db_connection
     conn.exec('DELETE FROM users')
     conn.close
   end

@@ -5,7 +5,7 @@ require_relative '../lib/user_repository'
 require_relative 'support/shared_repository_contract'
 
 RSpec.describe PostgresRepository do
-  let(:conn) { PG.connect(dbname: 'url_shortener_test') }
+  let(:conn) { test_db_connection }
   let(:user_repo) { UserRepository.new(conn) }
   let(:repository) { PostgresRepository.new(conn) }
 
@@ -15,7 +15,7 @@ RSpec.describe PostgresRepository do
   end
 
   after(:all) do
-    c = PG.connect(dbname: 'url_shortener_test')
+    c = test_db_connection
     c.exec('DELETE FROM urls')
     c.exec('DELETE FROM users')
     c.close

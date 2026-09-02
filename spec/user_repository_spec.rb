@@ -3,9 +3,7 @@
 require_relative '../lib/user_repository'
 
 RSpec.describe UserRepository do
-  let(:conn) do
-    PG.connect(dbname: 'url_shortener_test')
-  end
+  let(:conn) { test_db_connection }
   let(:repository) { UserRepository.new(conn) }
 
   before(:each) do
@@ -14,7 +12,7 @@ RSpec.describe UserRepository do
   end
 
   after(:all) do
-    c = PG.connect(dbname: 'url_shortener_test')
+    c = test_db_connection
     c.exec('DELETE FROM users') rescue nil # rubocop:disable Style/RescueModifier
     c.close
   end
