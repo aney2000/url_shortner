@@ -32,18 +32,6 @@ class UserRepository
     end
   end
 
-  def find_by_id(id)
-    @db_pool.with do |conn|
-      result = conn.exec_params(
-        'SELECT id, username FROM users WHERE id = $1 LIMIT 1',
-        [id]
-      )
-      return nil if result.ntuples.zero?
-
-      result[0]
-    end
-  end
-
   private
 
   def setup_schema
