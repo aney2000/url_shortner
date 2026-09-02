@@ -126,6 +126,19 @@ class UrlShortenerApp < Sinatra::Base
   end
 
   # ==========================================
+  # DASHBOARD ROUTES
+  # ==========================================
+
+  get '/dashboard' do
+    @current_user = current_user
+    redirect '/login' unless @current_user
+
+    @links = settings.repository.find_by_user(@current_user['id'])
+    @base_url = request.base_url
+    erb :dashboard
+  end
+
+  # ==========================================
   # API ROUTES (For tests and external apps)
   # ==========================================
 

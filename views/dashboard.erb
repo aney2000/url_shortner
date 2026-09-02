@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Links - URL Shortener</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <span>Hello, <strong><%= @current_user['username'] %></strong></span>
+        <a href="/">Shorten URL</a>
+        <a href="/dashboard">My Links</a>
+        <form action="/logout" method="POST" class="inline-form">
+            <button type="submit" class="nav-link-btn">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container">
+        <h1>My Links</h1>
+
+        <% if @links.empty? %>
+            <p class="muted">No links yet. <a href="/">Shorten one now!</a></p>
+        <% else %>
+            <div class="link-list">
+                <% @links.each do |link| %>
+                    <div class="link-item">
+                        <div class="short-url">
+                            <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
+                                <%= @base_url %>/<%= link['short_code'] %>
+                            </a>
+                        </div>
+                        <div class="long-url"><%= link['long_url'] %></div>
+                    </div>
+                <% end %>
+            </div>
+        <% end %>
+    </div>
+</body>
+</html>
