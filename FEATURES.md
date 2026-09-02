@@ -34,7 +34,7 @@ Sinatra App (app.rb / config.ru)
 
 ## Security Features
 
-- **XSS prevention**: Auto-escaped ERB output (`escape_html: true`)
+- **XSS prevention**: Manual HTML escaping via `h()` helper on all user data in templates
 - **SQL injection protection**: Parameterized queries throughout
 - **SSRF protection**: UrlChecker blocks requests to private/internal IPs
 - **Password hashing**: bcrypt with 72-byte limit enforcement
@@ -52,7 +52,7 @@ Sinatra App (app.rb / config.ru)
 | Database         | PostgreSQL 16      |
 | DB Pooling       | connection_pool     |
 | Auth             | bcrypt              |
-| Template Engine  | ERB (auto-escaped)  |
+| Template Engine  | ERB + h() escaping  |
 | Test Framework   | RSpec + Rack::Test  |
 | Linter           | RuboCop             |
 | CI/CD            | GitHub Actions      |
