@@ -1,44 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Recent Links - URL Shortener</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-    <nav class="nav-bar">
-        <a href="/">Shorten URL</a>
-        <a href="/recent">Recent Links</a>
-        <% if @current_user %>
-            <a href="/dashboard">My Links</a>
-            <form action="/logout" method="POST" class="inline-form">
-                <button type="submit" class="nav-link-btn">Logout</button>
-            </form>
-        <% else %>
-            <a href="/login">Log In</a>
-            <a href="/signup">Sign Up</a>
-        <% end %>
-    </nav>
+<div class="container">
+    <h1>Recent Links</h1>
 
-    <div class="container">
-        <h1>Recent Links</h1>
-
-        <% if @links.empty? %>
-            <p class="muted">No links shortened yet. <a href="/">Be the first!</a></p>
-        <% else %>
-            <div class="link-list">
+    <% if @links.empty? %>
+        <p class="muted">No links shortened yet.</p>
+    <% else %>
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Short URL</th>
+                    <th>Original URL</th>
+                </tr>
+            </thead>
+            <tbody>
                 <% @links.each do |link| %>
-                    <div class="link-item">
-                        <div class="short-url">
+                    <tr>
+                        <td>
                             <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
                                 <%= @base_url %>/<%= link['short_code'] %>
                             </a>
-                        </div>
-                        <div class="long-url"><%= link['long_url'] %></div>
-                    </div>
+                        </td>
+                        <td class="long-url-cell"><%= link['long_url'] %></td>
+                    </tr>
                 <% end %>
-            </div>
-        <% end %>
-    </div>
-</body>
-</html>
+            </tbody>
+        </table>
+    <% end %>
+</div>

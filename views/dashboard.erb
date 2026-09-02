@@ -1,39 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Links - URL Shortener</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-    <nav class="nav-bar">
-        <span>Hello, <strong><%= @current_user['username'] %></strong></span>
-        <a href="/">Shorten URL</a>
-        <a href="/dashboard">My Links</a>
-        <form action="/logout" method="POST" class="inline-form">
-            <button type="submit" class="nav-link-btn">Logout</button>
-        </form>
-    </nav>
+<div class="container">
+    <h1>My Links</h1>
 
-    <div class="container">
-        <h1>My Links</h1>
-
-        <% if @links.empty? %>
-            <p class="muted">No links yet. <a href="/">Shorten one now!</a></p>
-        <% else %>
-            <div class="link-list">
+    <% if @links.empty? %>
+        <p class="muted">No links yet. <a href="/">Shorten one now!</a></p>
+    <% else %>
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Short URL</th>
+                    <th>Original URL</th>
+                </tr>
+            </thead>
+            <tbody>
                 <% @links.each do |link| %>
-                    <div class="link-item">
-                        <div class="short-url">
+                    <tr>
+                        <td>
                             <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
                                 <%= @base_url %>/<%= link['short_code'] %>
                             </a>
-                        </div>
-                        <div class="long-url"><%= link['long_url'] %></div>
-                    </div>
+                        </td>
+                        <td class="long-url-cell"><%= link['long_url'] %></td>
+                    </tr>
                 <% end %>
-            </div>
-        <% end %>
-    </div>
-</body>
-</html>
+            </tbody>
+        </table>
+    <% end %>
+</div>

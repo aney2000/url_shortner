@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sign Up - URL Shortener</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-    <div class="container">
+<div class="auth-container">
+    <div class="auth-card">
         <h1>Sign Up</h1>
+        <p class="auth-subtitle">Create an account to start shortening URLs.</p>
 
-        <form action="/signup" method="POST">
+        <form action="/signup" method="POST" class="auth-form">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password (min 6 chars)" required>
-            <button type="submit">Sign Up</button>
+            <button type="submit" class="btn-primary btn-full">Sign Up</button>
         </form>
 
         <% if @error %>
@@ -21,5 +15,4 @@
 
         <p class="auth-link">Already have an account? <a href="/login">Log In</a></p>
     </div>
-</body>
-</html>
+</div>

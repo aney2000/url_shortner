@@ -1,47 +1,321 @@
+/* ==========================================
+   Reset & Base
+   ========================================== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+}
+
+a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+   Navigation Bar
+   ========================================== */
+.nav-bar {
+    background-color: #1a1a2e;
+    color: white;
+    padding: 0 2rem;
+    height: 56px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.nav-links a {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-user {
+    color: #a0aec0;
+    font-size: 0.85rem;
+    border-left: 1px solid #333;
+    padding-left: 1.25rem;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.btn-logout {
+    background: none;
+    border: 1px solid #555;
+    color: #a0aec0;
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    color: white;
+    border-color: #888;
+}
+
+/* ==========================================
+   Main Content
+   ========================================== */
+.main-content {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .container {
     background: white;
-    padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    text-align: center;
-    max-width: 500px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+}
+
+/* ==========================================
+   Shortener Section
+   ========================================== */
+.shorten-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.shorten-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #1a1a2e;
+}
+
+.shorten-form {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.shorten-form input[type="url"] {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.shorten-form input[type="url"]:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+.btn-primary {
+    padding: 0.7rem 1.5rem;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary:hover {
+    background-color: #0052a3;
+}
+
+.btn-full {
     width: 100%;
 }
 
-input[type="url"] {
-    width: 80%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover { background-color: #0056b3; }
-
+/* ==========================================
+   Result & Error Messages
+   ========================================== */
 .result {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 4px;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #e8f5e9;
+    border-radius: 6px;
+    border-left: 4px solid #2e7d32;
+    font-size: 0.95rem;
 }
 
-.error { color: red; font-weight: bold; }
+.result a {
+    color: #0066cc;
+    font-weight: 600;
+    word-break: break-all;
+}
+
+.error {
+    color: #c62828;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.muted {
+    color: #6b7280;
+    font-size: 0.95rem;
+    padding: 1rem 0;
+}
+
+/* ==========================================
+   History Section & Link Table
+   ========================================== */
+.history-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+}
+
+.history-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #1a1a2e;
+}
+
+.link-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.link-table thead {
+    background-color: #f8f9fa;
+}
+
+.link-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.link-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.link-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.link-table a {
+    color: #0066cc;
+    font-weight: 500;
+}
+
+.long-url-cell {
+    color: #6b7280;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   Auth Pages (Login / Signup)
+   ========================================== */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 56px);
+    padding: 2rem;
+}
+
+.auth-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-card h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+    color: #1a1a2e;
+}
+
+.auth-subtitle {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.auth-form input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.auth-link {
+    margin-top: 1.25rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.auth-link a {
+    color: #0066cc;
+    font-weight: 600;
+}

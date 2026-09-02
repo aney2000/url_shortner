@@ -1,62 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>URL Shortener</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-    <nav class="nav-bar">
-        <div class="nav-brand">URL Shortener</div>
-        <div class="nav-links">
-            <a href="/" class="nav-link active">Home</a>
-            <a href="/recent" class="nav-link">Recent</a>
-            <span class="nav-user">Hello, <strong><%= @current_user['username'] %></strong></span>
-            <form action="/logout" method="POST" class="inline-form">
-                <button type="submit" class="nav-link-btn">Logout</button>
-            </form>
-        </div>
-    </nav>
+<div class="container">
+    <div class="shorten-section">
+        <h2>Shorten a URL</h2>
+        <form action="/" method="POST" class="shorten-form">
+            <input type="url" name="long_url" placeholder="Paste your long link here..." required>
+            <button type="submit" class="btn-primary">Shorten</button>
+        </form>
 
-    <div class="container">
-        <div class="shorten-section">
-            <h2>Shorten a URL</h2>
-            <form action="/" method="POST" class="shorten-form">
-                <input type="url" name="long_url" placeholder="Paste your long link here..." required>
-                <button type="submit">Shorten</button>
-            </form>
+        <% if @error %>
+            <p class="error"><%= @error %></p>
+        <% end %>
 
-            <% if @error %>
-                <p class="error"><%= @error %></p>
-            <% end %>
+        <% if @short_url %>
+            <div class="result">
+                Success! Your short link is:
+                <a href="<%= @short_url %>" target="_blank"><%= @short_url %></a>
+            </div>
+        <% end %>
+    </div>
 
-            <% if @short_url %>
-                <div class="result">
-                    Success! Your short link is:
-                    <a href="<%= @short_url %>" target="_blank"><%= @short_url %></a>
-                </div>
-            <% end %>
-        </div>
-
-        <div class="history-section">
-            <h2>My Links</h2>
-            <% if @links.empty? %>
-                <p class="muted">No links yet. Shorten your first URL above!</p>
-            <% else %>
-                <div class="link-list">
+    <div class="history-section">
+        <h2>My Links</h2>
+        <% if @links.empty? %>
+            <p class="muted">No links yet. Shorten your first URL above!</p>
+        <% else %>
+            <table class="link-table">
+                <thead>
+                    <tr>
+                        <th>Short URL</th>
+                        <th>Original URL</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <% @links.each do |link| %>
-                        <div class="link-item">
-                            <div class="short-url">
+                        <tr>
+                            <td>
                                 <a href="<%= @base_url %>/<%= link['short_code'] %>" target="_blank">
                                     <%= @base_url %>/<%= link['short_code'] %>
                                 </a>
-                            </div>
-                            <div class="long-url"><%= link['long_url'] %></div>
-                        </div>
+                            </td>
+                            <td class="long-url-cell"><%= link['long_url'] %></td>
+                        </tr>
                     <% end %>
-                </div>
-            <% end %>
-        </div>
+                </tbody>
+            </table>
+        <% end %>
     </div>
-</body>
-</html>
+</div>
